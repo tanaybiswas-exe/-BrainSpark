@@ -6,7 +6,6 @@ from typing import List, Optional
 import sqlite3
 import jwt
 import bcrypt
-import requests  # ✅ requests লাইব্রেরি যুক্ত করা হয়েছে চ্যাটের জন্য
 from datetime import datetime, timedelta
 
 # CONFIGURATIONS
@@ -189,7 +188,6 @@ async def update_profile(data: UpdateProfileSchema, user = Depends(get_current_u
     conn.commit()
     conn.close()
     return {"message": "Profile updated"}
-
 @app.post("/generate-ideas")
 async def generate_ideas(data: GenerateIdeasSchema, user = Depends(get_current_user)):
     desc = data.description.lower()
@@ -200,7 +198,6 @@ async def generate_ideas(data: GenerateIdeasSchema, user = Depends(get_current_u
     title3 = f"Smart Distributed {data.description.title()} Core Hub"
     title4 = f"Cloud-Native {data.description.title()} Telemetry Engine"
     
-    # ✅ একসাথে ৪টি অ্যাডভান্সড আইডিয়া জেনারেট করার লজিক
     ideas = [
         {
             "title": title1,
@@ -228,6 +225,7 @@ async def generate_ideas(data: GenerateIdeasSchema, user = Depends(get_current_u
         }
     ]
     return ideas
+  
 
 @app.post("/save-project")
 async def save_project(project: SaveProjectSchema, user = Depends(get_current_user)):
@@ -306,34 +304,13 @@ async def delete_project(project_id: int, user = Depends(get_current_user)):
 @app.post("/chat-with-mentor")
 async def chat_with_mentor(query: MentorQuery, current_user = Depends(get_current_user)):
     conn = get_db()
-    project = conn.execute("SELECT title, tech_stack, description FROM projects WHERE id = ? AND user_id = ?", 
+    project = conn.execute("SELECT title, tech_stack FROM projects WHERE id = ? AND user_id = ?", 
                            (query.project_id, current_user["id"])).fetchone()
     conn.close()
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
     
-    # 🔗 আপনার দেওয়া আসল জেমিনি এপিআই কি এখানে সেট করে দেওয়া হয়েছে 
-    GEMINI_API_KEY = "AIzaSyBPleEgRjV1M4zQsJFHodagBWU7F6lIjgo"
-    
-    system_prompt = f"You are an expert academic project mentor. The student is working on a project titled '{project['title']}' using tech stack: {project['tech_stack']}. Project context: {project['description']}. Answer the student's query professionally, concisely, and provide clear guidance or code examples if needed. Keep the answers helpful and interactive."
-    
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
-    payload = {
-        "contents": [{
-            "parts": [
-                {"text": f"{system_prompt}\n\nStudent's Query: {query.message}"}
-            ]
-        }]
-    }
-    
-    try:
-        response = requests.post(url, json=payload, timeout=10)
-        res_data = response.json()
-        reply = res_data['candidates'][0]['content']['parts'][0]['text']
-    except Exception as e:
-        print("🔴 Gemini API Error:", e)
-        reply = f"Hello! As your mentor, I see you are working on '{project['title']}'. (System note: Live AI core connection pending or timed out. Please check your API key settings.)"
-        
+    reply = f"As your mentor, I see you are working on '{project['title']}' using {project['tech_stack']}. Regarding '{query.message}', I suggest reviewing the project structure and best practices."
     return {"reply": reply}
 
 @app.get("/projects/{project_id}/directory-tree")
@@ -359,8 +336,3 @@ async def forgot_password(data: ForgotPasswordSchema):
     conn.commit()
     conn.close()
     return {"message": "Password updated successfully"}
-
-# --- AUTO RUN CONFIGURATION ---
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
