@@ -188,7 +188,6 @@ async def update_profile(data: UpdateProfileSchema, user = Depends(get_current_u
     conn.commit()
     conn.close()
     return {"message": "Profile updated"}
-
 @app.post("/generate-ideas")
 async def generate_ideas(data: GenerateIdeasSchema, user = Depends(get_current_user)):
     desc = data.description.lower()
@@ -196,6 +195,8 @@ async def generate_ideas(data: GenerateIdeasSchema, user = Depends(get_current_u
     
     title1 = f"AI-Powered {data.description.title()} Control Suite"
     title2 = f"Next-Gen {data.description.title()} Optimization Network"
+    title3 = f"Smart Distributed {data.description.title()} Core Hub"
+    title4 = f"Cloud-Native {data.description.title()} Telemetry Engine"
     
     ideas = [
         {
@@ -209,9 +210,22 @@ async def generate_ideas(data: GenerateIdeasSchema, user = Depends(get_current_u
             "description": f"Cloud-integrated ecosystem specialized in optimizing operations for {data.description} using automated edge triggers and multi-tenant telemetry dashboards.",
             "tech_stack": f"{tech}, TailwindCSS",
             "features": "• Automated Pipeline Workflow & Trigger Logs\n• Highly Scalable Distributed Event Hub Broker\n• Native Light/Dark UI Glassmorphic Console Theme"
+        },
+        {
+            "title": title3,
+            "description": f"A decentralized smart automation pipeline designed specifically for managing {data.description}. Focuses heavily on lightweight edge computation and instant asynchronous microservices routing.",
+            "tech_stack": f"{tech}, Redis",
+            "features": "• Asynchronous Event-Driven Task Queue Logs\n• Lightweight Embedded State Sync Management\n• Dynamic System Performance Visualizer Charts"
+        },
+        {
+            "title": title4,
+            "description": f"Enterprise-grade analytics architecture for deep telemetry logging and prediction mapping inside the {data.description} infrastructure. Powered by automated error self-healing triggers.",
+            "tech_stack": f"{tech}, Docker Ready",
+            "features": "• Automated System Log Tracking Matrix\n• RESTful Blueprint Controller Access Tokens\n• Production-Ready Multi-Tenant Secure Partition"
         }
     ]
     return ideas
+  
 
 @app.post("/save-project")
 async def save_project(project: SaveProjectSchema, user = Depends(get_current_user)):
